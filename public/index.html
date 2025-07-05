@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsurEdge - Insurance Platform</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Wallet Styles */
+        .wallet-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 8px;
+            margin-right: 8px;
+        }
+
+        .wallet-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wallet-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .wallet-btn.connected {
+            background: #f44336;
+        }
+
+        .wallet-btn.connected:hover {
+            background: #d32f2f;
+        }
+
+        .wallet-address {
+            font-size: 14px;
+            color: #666;
+            display: none;
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .wallet-status {
+            font-size: 14px;
+            color: #666;
+            display: inline-block;
+        }
+
+        .wallet-status::before {
+            content: "•";
+            margin-right: 4px;
+            font-size: 16px;
+        }
+
+        .wallet-btn.loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .wallet-btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .wallet-btn .wallet-icon {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .wallet-btn:hover .wallet-icon {
+            transform: scale(1.1);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile Wallet Button */
+        .mobile-wallet-btn {
+            display: none;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            align-items: center;
+            gap: 8px;
+            margin: 10px auto;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .mobile-wallet-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-wallet-btn.connected {
+            background: #f44336;
+        }
+
+        .mobile-wallet-btn.connected:hover {
+            background: #d32f2f;
+        }
+
+        .mobile-wallet-btn.loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .mobile-wallet-btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .mobile-wallet-btn .wallet-icon {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-wallet-btn:hover .wallet-icon {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .wallet-section {
+                display: none;
+            }
+            
+            .mobile-wallet-btn {
+                display: flex;
+            }
+        }
+
+        /* Logo Container Styles */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .logo-icon {
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .company-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-left: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Update nav styles to accommodate the logo position */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-left: auto;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .kyc-status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .kyc-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .kyc-form-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .kyc-form-link:hover {
+            background-color: #0056b3;
+        }
+
+        /* KYC Banner Styles */
+        .kyc-banner {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-width: 300px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .kyc-banner.show {
+            display: block;
+        }
+
+        .kyc-banner h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .kyc-banner p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .kyc-banner .banner-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kyc-banner .banner-close {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0 5px;
+        }
+
+        .kyc-banner .banner-close:hover {
+            color: #000;
+        }
+
+        .kyc-banner .banner-link {
+            background: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .kyc-banner .banner-link:hover {
+            background: #0056b3;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        /* KYC Badge Styles */
+        .kyc-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 1px 4px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 2px;
+            font-size: 0.65rem;
+            margin-left: 6px;
+            font-weight: 500;
+            position: relative;
+            line-height: 1;
+            height: 16px;
+        }
+
+        .kyc-verified-badge.hidden {
+            display: none;
+        }
+
+        .kyc-status {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .mobile-menu {
+                display: block;
+            }
+            .kyc-verified-badge {
+                margin-right: 32px; /* Reduced space for mobile menu button */
+            }
+        }
+
+        /* Update nav container */
+        .nav-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            padding-right: 80px; /* Make space for the KYC badge */
+        }
+
+        /* Service Card Styles */
+        .services-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            width: 450px;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-image {
+            width: 100%;
+            height: 260px;
+            overflow: hidden;
+        }
+
+        .service-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .service-content {
+            padding: 1.5rem;
+        }
+
+        .service-content h3 {
+            color: #2c3e50;
+            margin-bottom: 0.75rem;
+            font-size: 1.8rem;
+        }
+
+        .service-content p {
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            font-size: 1.1rem;
+        }
+
+        .service-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s ease;
+            font-size: 1.1rem;
+            padding: 0.25rem 0;
+        }
+
+        .service-link:hover {
+            color: #2980b9;
+        }
+    </style>
+  </head>
+  <body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <img src="logo.png" alt="Insuredge Logo" style="width: 55px; height: auto;">
+                </div>
+                <span class="company-name">INSUREDGE</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><button class="login-btn" onclick="toggleLoginModal()">Login</button></li>
+                <li>
+                    <div class="wallet-section">
+                        <button id="walletBtn" class="wallet-btn" onclick="handleWalletClick()">
+                            <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            Connect Wallet
+                        </button>
+                        <span id="walletAddress" class="wallet-address"></span>
+                        <span id="walletStatus" class="wallet-status">Not Connected</span>
+                    </div>
+                </li>
+            </ul>
+            <!-- Update KYC Badge -->
+            <div class="kyc-verified-badge hidden">
+                <span class="kyc-status">KYC ✓</span>
+            </div>
+            <button class="mobile-menu" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="toggleLoginModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to your account</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+                <button type="submit" class="submit-btn">Sign In</button>
+                <p class="signup-link">
+                    Don't have an account? <a href="#" onclick="toggleSignupModal()">Sign up</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="toggleSignupModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div class="modal-header">
+                <h2>Create an Account</h2>
+                <p>Sign up to get started</p>
+            </div>
+            <form id="signupForm" class="signup-form">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" name="fullName" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" placeholder="Create a password" required>
+                </div>
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="signup-remember">
+                        <span>Remember me</span>
+                    </label>
+                </div>
+                <button type="submit" class="submit-btn">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- KYC Section -->
+    <div id="kycSection" class="form-container" style="display: none;">
+        <h2>KYC Verification</h2>
+        <div id="kycStatus" class="kyc-status">
+            <div class="kyc-header">
+                <h3>Your KYC Status</h3>
+                <a href="/kyc.html" class="kyc-form-link">Complete KYC Verification</a>
+            </div>
+            <div id="kycMessage"></div>
+        </div>
+    </div>
+
+    <main>
+        <!-- Add KYC Banner at the top of main content -->
+        <div class="kyc-banner mb-8"></div>
+
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>Blockchain with the Edge of Insurance</h1>
+                <p>Blockchain-powered insurance solutions for the modern world</p>
+                <a href="#services" class="cta-button">Get Started</a>
+            </div>
+        </section>
+
+        <section id="services">
+            <h2>Our Insurance Solutions</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=300&q=80" alt="Life Insurance">
+                    </div>
+                    <div class="service-content">
+                        <h3>Life Insurance</h3>
+                        <p>Secure your family's future with transparent blockchain policies</p>
+                        <a href="life-insurance.html" class="service-link">Learn More →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about">
+            <div class="about-content">
+                <h2>Why Choose InsurEdge?</h2>
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">🛡️</div>
+                        <h3>Blockchain Security</h3>
+                        <p>Immutable records and smart contracts for ultimate security</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Instant Claims</h3>
+                        <p>Automated processing through smart contracts</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🌟</div>
+                        <h3>24/7 Support</h3>
+                        <p>Round-the-clock assistance powered by blockchain technology</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <div class="contact-container">
+                <form class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-email">Email Address</label>
+                        <input type="email" id="contact-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="Enter your phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" placeholder="How can we help you?" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+                <div class="contact-info">
+                    <h3>Get in Touch</h3>
+                    <div class="info-item">
+                        <span class="info-icon">📧</span>
+                        <p>contact@insuredge.com</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">📞</span>
+                        <p>9987118792</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">📍</span>
+                        <p>Mahim, Mumbai</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <img src="logo.png" alt="Insuredge Logo" style="width: 130px; height: auto;">
+                </div>
+                <p>InsurEdge</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Disclaimer</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 InsurEdge. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Add this modal HTML before the closing body tag -->
+    <div id="kycModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>KYC Verification Required</h2>
+            <p>To proceed with insurance purchases, you need to complete your KYC verification.</p>
+            <div class="kyc-status">
+                <div id="kycStatusMessage"></div>
+            </div>
+            <div class="kyc-actions">
+                <a href="/kyc.html" class="kyc-form-link">Complete KYC Verification</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this HTML before the closing body tag -->
+    <div id="kycBanner" class="kyc-banner">
+        <h3>KYC Verification Required</h3>
+        <p>Complete your KYC verification to access insurance services.</p>
+        <div class="banner-actions">
+            <a href="/kyc.html" class="banner-link">Complete KYC</a>
+            <button class="banner-close" onclick="hideKYCBanner()">&times;</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleSignupModal() {
+            const signupModal = document.getElementById('signupModal');
+            signupModal.classList.toggle('active');
+            document.body.classList.toggle('modal-open');
+        }
+        
+        function toggleLoginModal() {
+            const loginModal = document.getElementById('loginModal');
+            loginModal.classList.toggle('active');
+            document.body.classList.toggle('modal-open');
+        }
+        
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const signupModal = document.getElementById('signupModal');
+            const loginModal = document.getElementById('loginModal');
+            if (event.target === signupModal) {
+                toggleSignupModal();
+            }
+            if (event.target === loginModal) {
+                toggleLoginModal();
+            }
+        }
+
+        // Function to check KYC status
+        async function checkKYCStatus() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    document.getElementById('kycSection').style.display = 'none';
+                    return;
+                }
+
+                const response = await fetch('/api/kyc/status', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch KYC status');
+                }
+
+                const data = await response.json();
+                const kycSection = document.getElementById('kycSection');
+                const kycMessage = document.getElementById('kycMessage');
+                
+                kycSection.style.display = 'block';
+                
+                if (!data) {
+                    kycMessage.innerHTML = `
+                        <div class="alert alert-warning">
+                            KYC verification is required to access insurance services.
+                        </div>
+                    `;
+                } else {
+                    switch(data.status) {
+                        case 'pending':
+                            kycMessage.innerHTML = `
+                                <div class="alert alert-warning">
+                                    Your KYC verification is pending review.
+                                </div>
+                            `;
+                            break;
+                        case 'rejected':
+                            kycMessage.innerHTML = `
+                                <div class="alert alert-danger">
+                                    Your KYC verification was rejected. Reason: ${data.rejectionReason}
+                                </div>
+                            `;
+                            break;
+                        case 'verified':
+                            kycMessage.innerHTML = `
+                                <div class="alert alert-success">
+                                    Your KYC verification is complete and verified.
+                                </div>
+                            `;
+                            break;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking KYC status:', error);
+                document.getElementById('kycSection').style.display = 'none';
+            }
+        }
+
+        // Update the login success handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Close the login modal
+                    toggleLoginModal();
+                    
+                    // Update UI to show logged-in state
+                    updateUIForLoggedInUser(data.user);
+                    
+                    // Check KYC status and show banner if needed
+                    const kycStatus = await checkKYCStatus();
+                    if (!kycStatus || kycStatus.status === 'rejected') {
+                        showKYCBanner();
+                    }
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed. Please try again.');
+            }
+        });
+
+        // Function to update UI for logged-in user
+        function updateUIForLoggedInUser(user) {
+            // Update login button to show user's name
+            const loginBtn = document.querySelector('.login-btn');
+            if (loginBtn) {
+                loginBtn.textContent = `Welcome, ${user.full_name}`;
+                loginBtn.style.backgroundColor = '#4CAF50';
+                loginBtn.style.color = 'white';
+            }
+            
+            // Show KYC section
+            const kycSection = document.getElementById('kycSection');
+            if (kycSection) {
+                kycSection.style.display = 'block';
+            }
+            
+            // Check KYC status
+            checkKYCStatus();
+        }
+
+        // Update the signup success handler
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fullName, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    // Show KYC section after successful signup
+                    document.getElementById('kycSection').style.display = 'block';
+                    checkKYCStatus();
+                    alert('Signup successful! Please complete your KYC verification.');
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert('Signup failed. Please try again.');
+            }
+        });
+
+        // Check KYC status when page loads
+        document.addEventListener('DOMContentLoaded', checkKYCStatus);
+
+        // Get the modal
+        const modal = document.getElementById('kycModal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+
+        // Function to show KYC banner
+        function showKYCBanner() {
+            const banner = document.getElementById('kycBanner');
+            banner.classList.add('show');
+        }
+
+        // Function to hide KYC banner
+        function hideKYCBanner() {
+            const banner = document.getElementById('kycBanner');
+            banner.classList.remove('show');
+        }
+
+        // Update the checkKYCStatus function
+        async function checkKYCStatus() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    return null;
+                }
+
+                const response = await fetch('/api/kyc/status', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch KYC status');
+                }
+
+                const data = await response.json();
+                
+                if (!data) {
+                    showKYCBanner();
+                    return null;
+                } else if (data.status === 'pending') {
+                    // Don't show banner for pending status
+                    return data;
+                } else if (data.status === 'rejected') {
+                    showKYCBanner();
+                    return data;
+                } else if (data.status === 'verified') {
+                    hideKYCBanner();
+                    return data;
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error checking KYC status:', error);
+                return null;
+            }
+        }
+
+        // Add click event to KYC button in navbar
+        document.getElementById('kycButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            showKYCBanner();
+        });
+
+        // Add event listeners to forms
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+        }
+
+        const signupForm = document.getElementById('signupForm');
+        if (signupForm) {
+            signupForm.addEventListener('submit', handleSignup);
+        }
+
+        const kycForm = document.getElementById('kycForm');
+        if (kycForm) {
+            kycForm.addEventListener('submit', handleKYCSubmission);
+        }
+
+        // Add event listeners to buttons
+        const connectWalletBtn = document.getElementById('connectWalletBtn');
+        if (connectWalletBtn) {
+            connectWalletBtn.addEventListener('click', connectWallet);
+        }
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', logout);
+        }
+    </script>
+    <script src="/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.2.0/ethers.umd.min.js" type="application/javascript"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/kyc.js"></script>
+    <script>
+        // Wait for ethers to be loaded
+        window.addEventListener('load', async function() {
+            // Check if ethers is loaded
+            if (typeof ethers === 'undefined') {
+                console.error('ethers.js not loaded');
+                alert('Error loading required libraries. Please refresh the page.');
+                return;
+            }
+
+            try {
+                // Initialize Web3 and check wallet connection
+                await initializeWeb3();
+                
+                // Check if wallet is connected
+                const walletAddress = window.ethereum.selectedAddress;
+                if (walletAddress) {
+                    // Update wallet UI
+                    userAddress = walletAddress;
+                    userWallet = new ethers.providers.Web3Provider(window.ethereum);
+                    updateWalletUI();
+
+                    // Check KYC status
+                    const kycData = JSON.parse(localStorage.getItem('kycData') || '[]');
+                    const kycArray = Array.isArray(kycData) ? kycData : [kycData];
+                    const userKYC = kycArray.find(k => k && k.walletAddress.toLowerCase() === walletAddress.toLowerCase());
+                    const kycBadge = document.querySelector('.kyc-verified-badge');
+                    
+                    if (userKYC && userKYC.status === 'verified') {
+                        kycBadge.classList.remove('hidden');
+                    } else {
+                        kycBadge.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error initializing:', error);
+                if (!checkMetaMask()) {
+                    const walletBtn = document.getElementById('walletBtn');
+                    walletBtn.innerHTML = `
+                        <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        Install MetaMask
+                    `;
+                    walletBtn.onclick = function() {
+                        window.open('https://metamask.io/download/', '_blank');
+                    };
+                }
+            }
+        });
+
+        // Handle wallet connection/disconnection
+        async function handleWalletClick() {
+            const walletBtn = document.getElementById('walletBtn');
+            const kycBadge = document.querySelector('.kyc-verified-badge');
+            
+            try {
+                if (walletBtn.classList.contains('connected')) {
+                    await disconnectWallet();
+                    kycBadge.classList.add('hidden');
+                } else {
+                    await connectWallet();
+                    const walletAddress = window.ethereum.selectedAddress;
+                    if (walletAddress) {
+                        const kycData = JSON.parse(localStorage.getItem('kycData') || '[]');
+                        const kycArray = Array.isArray(kycData) ? kycData : [kycData];
+                        const userKYC = kycArray.find(k => k && k.walletAddress.toLowerCase() === walletAddress.toLowerCase());
+                        
+                        if (userKYC && userKYC.status === 'verified') {
+                            kycBadge.classList.remove('hidden');
+                        } else {
+                            kycBadge.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling wallet click:', error);
+                alert('Error handling wallet connection. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

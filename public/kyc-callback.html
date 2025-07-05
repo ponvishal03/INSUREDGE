@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification Callback - InsurEdge</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8fafc;
+        }
+
+        .callback-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .loading {
+            display: none;
+            margin: 2rem 0;
+        }
+
+        .loading::after {
+            content: "";
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1e3a8a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            color: #166534;
+            display: none;
+        }
+
+        .error-message {
+            color: #991b1b;
+            display: none;
+        }
+
+        .redirect-message {
+            margin-top: 1rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="callback-container">
+        <h1>Processing Verification</h1>
+        <div class="loading"></div>
+        <div class="success-message">
+            <h2>Verification Successful!</h2>
+            <p>Your documents have been verified successfully.</p>
+            <p class="redirect-message">Redirecting you back to the KYC form...</p>
+        </div>
+        <div class="error-message">
+            <h2>Verification Failed</h2>
+            <p>There was an error verifying your documents.</p>
+            <p class="redirect-message">Redirecting you back to the KYC form...</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const loading = document.querySelector('.loading');
+            const successMessage = document.querySelector('.success-message');
+            const errorMessage = document.querySelector('.error-message');
+            
+            // Show loading
+            loading.style.display = 'block';
+            
+            try {
+                // Get URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get('sessionId');
+                const status = urlParams.get('status');
+                
+                if (!sessionId) {
+                    throw new Error('No session ID provided');
+                }
+                
+                // Store verification status in localStorage
+                const verificationData = {
+                    sessionId,
+                    status,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem('digilockerVerification', JSON.stringify(verificationData));
+                
+                // Show success message
+                loading.style.display = 'none';
+                successMessage.style.display = 'block';
+                
+                // Redirect back to KYC form after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'kyc.html';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error processing verification callback:', error);
+                
+                // Show error message
+                loading.style.display = 'none';
+                errorMessage.style.display = 'block';
+                
+                // Redirect back to KYC form after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'kyc.html';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html> 

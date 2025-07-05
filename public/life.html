@@ -1,0 +1,97 @@
+<script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
+<script src="js/wallet.js"></script>
+
+<script>
+// Initialize wallet connection
+document.addEventListener('DOMContentLoaded', async function() {
+    const connectWalletBtn = document.getElementById('connectWalletBtn');
+    const walletAddress = document.getElementById('walletAddress');
+    
+    if (connectWalletBtn) {
+        connectWalletBtn.addEventListener('click', async function() {
+            try {
+                if (connectWalletBtn.textContent === 'Connect Wallet') {
+                    await connectWallet();
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        walletAddress.textContent = `${account.substring(0, 6)}...${account.substring(38)}`;
+                        connectWalletBtn.textContent = 'Disconnect';
+                        connectWalletBtn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                        connectWalletBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+                    }
+                } else {
+                    await disconnectWallet();
+                    walletAddress.textContent = '';
+                    connectWalletBtn.textContent = 'Connect Wallet';
+                    connectWalletBtn.classList.remove('bg-red-500', 'hover:bg-red-700');
+                    connectWalletBtn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                }
+            } catch (error) {
+                console.error('Error with wallet connection:', error);
+                alert('Error connecting wallet: ' + error.message);
+            }
+        });
+
+        // Check if already connected
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                const account = accounts[0];
+                walletAddress.textContent = `${account.substring(0, 6)}...${account.substring(38)}`;
+                connectWalletBtn.textContent = 'Disconnect';
+                connectWalletBtn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                connectWalletBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+            }
+        } catch (error) {
+            console.error('Error checking wallet connection:', error);
+        }
+
+        // Listen for account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', async function(accounts) {
+                if (accounts.length > 0) {
+                    const account = accounts[0];
+                    walletAddress.textContent = `${account.substring(0, 6)}...${account.substring(38)}`;
+                    connectWalletBtn.textContent = 'Disconnect';
+                    connectWalletBtn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                    connectWalletBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+                } else {
+                    walletAddress.textContent = '';
+                    connectWalletBtn.textContent = 'Connect Wallet';
+                    connectWalletBtn.classList.remove('bg-red-500', 'hover:bg-red-700');
+                    connectWalletBtn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                }
+            });
+
+            window.ethereum.on('chainChanged', function(chainId) {
+                window.location.reload();
+            });
+        }
+    }
+});
+</script>
+
+<nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center">
+                <a href="index.html" class="flex items-center">
+                    <img src="logo.png" alt="InsurEdge Logo" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-900">InsurEdge</span>
+                </a>
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <a href="index.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="life.html" class="text-blue-500 hover:text-blue-700 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-500">Life Insurance</a>
+                    <a href="dashboard.html" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <button id="connectWalletBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                    Connect Wallet
+                </button>
+                <span id="walletAddress" class="ml-4 text-sm text-gray-600"></span>
+            </div>
+        </div>
+    </div>
+</nav> 

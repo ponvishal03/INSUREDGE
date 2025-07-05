@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Verification - InsurEdge</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Navigation styles */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        .nav-brand:hover {
+            transform: translateY(-2px);
+        }
+        .nav-brand img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+        }
+        .nav-brand span {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1e3a8a;
+            letter-spacing: 1.5px;
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, #1e3a8a, #2563eb);
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active {
+            color: #1e3a8a;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        /* Add wallet section styles */
+        .wallet-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-left: 20px;
+        }
+        .wallet-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .wallet-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .wallet-btn.connected {
+            background: #f44336;
+        }
+        .wallet-btn.connected:hover {
+            background: #d32f2f;
+        }
+        .wallet-address {
+            font-size: 14px;
+            color: #666;
+            display: none;
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .wallet-status {
+            font-size: 14px;
+            color: #666;
+            display: inline-block;
+        }
+        .wallet-status::before {
+            content: "•";
+            margin-right: 4px;
+            font-size: 16px;
+        }
+        .wallet-btn.loading {
+            position: relative;
+            pointer-events: none;
+        }
+        .wallet-btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .wallet-btn .wallet-icon {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+        .wallet-btn:hover .wallet-icon {
+            transform: scale(1.1);
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* Mobile menu styles */
+        .nav-links.md\:hidden {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .nav-links.md\:hidden.active {
+            display: flex;
+        }
+        .nav-links.md\:hidden .nav-link {
+            padding: 0.75rem 0;
+            width: 100%;
+            text-align: center;
+        }
+        .nav-links.md\:hidden .wallet-section {
+            margin: 1rem 0;
+            width: 100%;
+            justify-content: center;
+        }
+        /* ... rest of your existing styles ... */
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="nav-brand">
+                        <img src="logo.png" alt="InsurEdge Logo">
+                        <span>InsurEdge</span>
+                    </a>
+                    <div class="hidden md:flex ml-8 space-x-4">
+                        <a href="index.html" class="nav-link">Home</a>
+                        <a href="life-insurance.html" class="nav-link">Life Insurance</a>
+                        <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="wallet-section">
+                        <button id="walletBtn" class="wallet-btn" onclick="handleWalletClick()">
+                            <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            Connect Wallet
+                        </button>
+                        <span id="walletAddress" class="wallet-address"></span>
+                        <span id="walletStatus" class="wallet-status">Not Connected</span>
+                    </div>
+                    <button class="mobile-menu-btn md:hidden" onclick="toggleMobileMenu()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="nav-links md:hidden">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="life-insurance.html" class="nav-link">Life Insurance</a>
+            <a href="dashboard.html" class="nav-link">Dashboard</a>
+            <div class="wallet-section">
+                <button id="mobileWalletBtn" class="wallet-btn" onclick="handleWalletClick()">
+                    <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Connect Wallet
+                </button>
+                <span id="mobileWalletAddress" class="wallet-address"></span>
+                <span id="mobileWalletStatus" class="wallet-status">Not Connected</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 mt-16">
+        <div class="max-w-3xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-800 mb-8">KYC Verification</h1>
+            
+            <!-- KYC Status Alert -->
+            <div id="kycStatus" class="mb-8 p-4 rounded-lg hidden">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="kycStatusText"></span>
+                </div>
+            </div>
+
+            <!-- KYC Form -->
+            <form id="kycForm" class="bg-white rounded-lg shadow-lg p-8">
+                <!-- Personal Information -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-6">Personal Information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="fullName" class="block text-base font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" required
+                                class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="dateOfBirth" class="block text-base font-medium text-gray-700 mb-2">Date of Birth</label>
+                            <input type="text" id="dateOfBirth" name="dateOfBirth" required
+                                class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="dd-mm-yyyy"
+                                onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'">
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="block text-base font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="email" name="email" required
+                                class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter your email">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="block text-base font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required
+                                class="w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter your phone number">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Verification -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-6">Document Verification</h2>
+                    <div class="space-y-6">
+                        <!-- PAN Card -->
+                        <div class="form-group">
+                            <label class="block text-base font-medium text-gray-700 mb-2">PAN Card</label>
+                            <div class="mt-2">
+                                <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('panCard').click()">
+                                    <div class="space-y-1 text-center">
+                                        <div id="panPreview" class="hidden mb-3">
+                                            <img src="" alt="PAN Preview" class="mx-auto h-32 w-auto">
+                                            <button type="button" onclick="removeUpload('panCard', event)" class="mt-2 text-sm text-red-600 hover:text-red-800">
+                                                Remove
+                                            </button>
+                                        </div>
+                                        <div id="panUploadIcon">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                            <div class="text-sm text-gray-600">
+                                                <span class="text-blue-600 hover:text-blue-500">Click to upload PAN card</span>
+                                                <input id="panCard" name="panCard" type="file" class="sr-only" accept="image/*" required onchange="handleFileUpload(this, 'panPreview', 'panUploadIcon')">
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aadhar Card -->
+                        <div class="form-group">
+                            <label class="block text-base font-medium text-gray-700 mb-2">Aadhar Card</label>
+                            <div class="mt-2">
+                                <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('aadharCard').click()">
+                                    <div class="space-y-1 text-center">
+                                        <div id="aadharPreview" class="hidden mb-3">
+                                            <img src="" alt="Aadhar Preview" class="mx-auto h-32 w-auto">
+                                            <button type="button" onclick="removeUpload('aadharCard', event)" class="mt-2 text-sm text-red-600 hover:text-red-800">
+                                                Remove
+                                            </button>
+                                        </div>
+                                        <div id="aadharUploadIcon">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                            <div class="text-sm text-gray-600">
+                                                <span class="text-blue-600 hover:text-blue-500">Click to upload Aadhar card</span>
+                                                <input id="aadharCard" name="aadharCard" type="file" class="sr-only" accept="image/*" required onchange="handleFileUpload(this, 'aadharPreview', 'aadharUploadIcon')">
+                                            </div>
+                                            <p class="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        Verify Documents
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Load ethers.js first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.2.0/ethers.umd.min.js" type="application/javascript"></script>
+    <!-- Load Tesseract.js for OCR -->
+    <script src='https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js'></script>
+    <!-- Then load our wallet.js -->
+    <script src="js/wallet.js"></script>
+    <script>
+        // Add mobile menu toggle function
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (!mobileMenu.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Initialize wallet on page load
+        window.addEventListener('load', async function() {
+            try {
+                await initializeWeb3();
+            } catch (error) {
+                console.error('Error initializing wallet:', error);
+                if (!checkMetaMask()) {
+                    const walletBtn = document.getElementById('walletBtn');
+                    walletBtn.innerHTML = `
+                        <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        Install MetaMask
+                    `;
+                    walletBtn.onclick = function() {
+                        window.open('https://metamask.io/download/', '_blank');
+                    };
+                }
+            }
+        });
+
+        // Add wallet click handler
+        async function handleWalletClick() {
+            const walletBtn = document.getElementById('walletBtn');
+            const mobileWalletBtn = document.getElementById('mobileWalletBtn');
+            try {
+                if (walletBtn.classList.contains('connected')) {
+                    await disconnectWallet();
+                } else {
+                    await connectWallet();
+                }
+                // Update both buttons
+                if (mobileWalletBtn) {
+                    mobileWalletBtn.innerHTML = walletBtn.innerHTML;
+                    mobileWalletBtn.classList.toggle('connected', walletBtn.classList.contains('connected'));
+                }
+            } catch (error) {
+                console.error('Error handling wallet click:', error);
+                alert('Error handling wallet connection. Please try again.');
+                // Reset both buttons
+                const resetButton = (btn) => {
+                    if (btn) {
+                        btn.classList.remove('loading');
+                        btn.classList.remove('connected');
+                        btn.innerHTML = `
+                            <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            Connect Wallet
+                        `;
+                    }
+                };
+                resetButton(walletBtn);
+                resetButton(mobileWalletBtn);
+            }
+        }
+
+        // Handle file upload and preview
+        function handleFileUpload(input, previewId, uploadIconId) {
+            const file = input.files[0];
+            const previewDiv = document.getElementById(previewId);
+            const uploadIconDiv = document.getElementById(uploadIconId);
+            
+            if (file) {
+                // Validate file size (5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please upload a valid image file (PNG or JPG)');
+                    input.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImg = previewDiv.querySelector('img');
+                    previewImg.src = e.target.result;
+                    previewDiv.classList.remove('hidden');
+                    uploadIconDiv.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Remove uploaded file
+        function removeUpload(inputId, event) {
+            event.stopPropagation(); // Prevent click from bubbling to parent
+            const input = document.getElementById(inputId);
+            const previewDiv = document.getElementById(inputId === 'panCard' ? 'panPreview' : 'aadharPreview');
+            const uploadIconDiv = document.getElementById(inputId === 'panCard' ? 'panUploadIcon' : 'aadharUploadIcon');
+            
+            input.value = ''; // Clear the file input
+            previewDiv.classList.add('hidden'); // Hide preview
+            previewDiv.querySelector('img').src = ''; // Clear preview image
+            uploadIconDiv.classList.remove('hidden'); // Show upload icon again
+        }
+
+        // Update form validation
+        function validateForm() {
+            const fullName = document.getElementById('fullName').value;
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const panCard = document.getElementById('panCard').files[0];
+            const aadharCard = document.getElementById('aadharCard').files[0];
+
+            // Name validation
+            if (!/^[A-Za-z\s]+$/.test(fullName)) {
+                alert('Please enter a valid name (letters and spaces only)');
+                return false;
+            }
+
+            // Age validation (18 or older)
+            const today = new Date();
+            const birthDate = new Date(dateOfBirth);
+            const age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                alert('You must be 18 or older to submit KYC');
+                return false;
+            }
+
+            // Email validation
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('Please enter a valid email address');
+                return false;
+            }
+
+            // Phone validation
+            if (!/^[0-9]{10}$/.test(phone)) {
+                alert('Please enter a valid 10-digit phone number');
+                return false;
+            }
+
+            // Document validation
+            if (!panCard || !aadharCard) {
+                alert('Please upload both PAN card and Aadhar card');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Document verification with OCR
+        async function verifyDocument(file, documentType) {
+            try {
+                // Create a loading message
+                const kycStatus = document.getElementById('kycStatus');
+                const kycStatusText = document.getElementById('kycStatusText');
+                kycStatus.classList.remove('hidden');
+                kycStatus.classList.add('bg-blue-100', 'text-blue-700');
+                kycStatusText.textContent = `Scanning ${documentType}...`;
+
+                // Perform OCR using Tesseract.js with improved settings
+                const result = await Tesseract.recognize(
+                    file,
+                    'eng',
+                    {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                kycStatusText.textContent = `Processing ${documentType}: ${Math.round(m.progress * 100)}%`;
+                            }
+                        }
+                    }
+                );
+
+                // Extract text from the result and normalize it
+                const extractedText = result.data.text.toLowerCase()
+                    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+                    .replace(/\s+/g, ' ')        // Normalize spaces
+                    .trim();
+                console.log(`Extracted text from ${documentType}:`, extractedText);
+
+                // Get and normalize the name from the form
+                const fullName = document.getElementById('fullName').value.toLowerCase();
+                const nameFromForm = fullName
+                    .replace(/[^a-z\s]/g, '')    // Remove special characters
+                    .split(' ')
+                    .filter(part => part.length > 1); // Filter out single characters
+                console.log('Name parts to check:', nameFromForm);
+
+                // Verify document based on type
+                if (documentType === 'PAN') {
+                    // Check for PAN format (ABCDE1234F) - more lenient regex
+                    const panRegex = /[a-z]{4,5}[0-9]{3,4}[a-z]{1}/i;
+                    const panFound = panRegex.test(extractedText);
+                    console.log('PAN number found:', panFound);
+
+                    // More lenient name checking
+                    let nameFound = false;
+                    
+                    // Method 1: Check for individual name parts
+                    nameFound = nameFromForm.some(namePart => {
+                        // Allow for OCR errors by checking for partial matches
+                        const minLength = Math.min(4, namePart.length);
+                        const partialName = namePart.substring(0, minLength);
+                        return extractedText.includes(partialName);
+                    });
+
+                    // Method 2: Check for character similarity
+                    if (!nameFound) {
+                        nameFound = nameFromForm.some(namePart => {
+                            const words = extractedText.split(' ');
+                            return words.some(word => {
+                                if (word.length < 3) return false;
+                                let matches = 0;
+                                const minLength = Math.min(word.length, namePart.length);
+                                for (let i = 0; i < minLength; i++) {
+                                    if (word[i] === namePart[i]) matches++;
+                                }
+                                return matches >= Math.min(3, minLength);
+                            });
+                        });
+                    }
+
+                    console.log('Name match found:', nameFound);
+
+                    if (!panFound) {
+                        throw new Error('Could not find valid PAN number format in the document');
+                    }
+                    
+                    // More informative error message for name mismatch
+                    if (!nameFound) {
+                        console.log('Expected name:', fullName);
+                        console.log('Extracted text:', extractedText);
+                        throw new Error(`Name verification failed. Please ensure the image is clear and your name "${fullName}" is visible on the PAN card.`);
+                    }
+
+                } else if (documentType === 'Aadhar') {
+                    // Check for 12-digit Aadhar number - more lenient regex
+                    const aadharRegex = /[0-9]{3,4}[\s-]*[0-9]{3,4}[\s-]*[0-9]{3,4}/;
+                    const aadharFound = aadharRegex.test(extractedText);
+                    console.log('Aadhar number found:', aadharFound);
+
+                    // More lenient name checking for Aadhar (same as PAN)
+                    let nameFound = nameFromForm.some(namePart => {
+                        // Allow for OCR errors by checking for partial matches
+                        const minLength = Math.min(4, namePart.length);
+                        const partialName = namePart.substring(0, minLength);
+                        return extractedText.includes(partialName);
+                    });
+
+                    if (!nameFound) {
+                        nameFound = nameFromForm.some(namePart => {
+                            const words = extractedText.split(' ');
+                            return words.some(word => {
+                                if (word.length < 3) return false;
+                                let matches = 0;
+                                const minLength = Math.min(word.length, namePart.length);
+                                for (let i = 0; i < minLength; i++) {
+                                    if (word[i] === namePart[i]) matches++;
+                                }
+                                return matches >= Math.min(3, minLength);
+                            });
+                        });
+                    }
+
+                    console.log('Name match found:', nameFound);
+
+                    if (!aadharFound) {
+                        throw new Error('Could not find valid Aadhar number format in the document');
+                    }
+                    if (!nameFound) {
+                        console.log('Expected name:', fullName);
+                        console.log('Extracted text:', extractedText);
+                        throw new Error(`Name verification failed. Please ensure the image is clear and your name "${fullName}" is visible on the Aadhar card.`);
+                    }
+                }
+
+                // Update status to show success for this document
+                kycStatus.classList.remove('bg-blue-100', 'text-blue-700');
+                kycStatus.classList.add('bg-green-100', 'text-green-700');
+                kycStatusText.textContent = `${documentType} verification successful!`;
+                
+                return true;
+
+            } catch (error) {
+                console.error('Document verification error:', error);
+                kycStatus.classList.remove('bg-blue-100', 'text-blue-700');
+                kycStatus.classList.add('bg-red-100', 'text-red-700');
+                kycStatusText.textContent = `Error verifying ${documentType}: ${error.message}`;
+                return false;
+            }
+        }
+
+        // Store KYC data
+        async function storeKYCData(formData, documents) {
+            try {
+                // Create KYC data object
+                const newKYCData = {
+                    personalInfo: {
+                        fullName: formData.get('fullName'),
+                        dateOfBirth: formData.get('dateOfBirth'),
+                        email: formData.get('email'),
+                        phone: formData.get('phone')
+                    },
+                    documents: {
+                        panVerified: true,
+                        aadharVerified: true,
+                        verificationDate: new Date().toISOString()
+                    },
+                    walletAddress: userAddress,
+                    timestamp: new Date().toISOString(),
+                    status: 'verified'
+                };
+
+                // Get existing KYC data array or create new one
+                let kycDataArray = [];
+                const existingData = localStorage.getItem('kycData');
+                if (existingData) {
+                    try {
+                        kycDataArray = JSON.parse(existingData);
+                        if (!Array.isArray(kycDataArray)) {
+                            kycDataArray = [kycDataArray];
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing existing KYC data, creating new array');
+                    }
+                }
+
+                // Remove any existing entry for this wallet address
+                kycDataArray = kycDataArray.filter(data => data.walletAddress !== userAddress);
+                
+                // Add new KYC data
+                kycDataArray.push(newKYCData);
+
+                // Store updated array in localStorage
+                localStorage.setItem('kycData', JSON.stringify(kycDataArray));
+
+                // Show success message and verified badge
+                const kycForm = document.getElementById('kycForm');
+                const kycStatus = document.getElementById('kycStatus');
+                const kycStatusText = document.getElementById('kycStatusText');
+
+                // Update status message
+                kycStatus.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700');
+                kycStatus.classList.add('bg-green-100', 'text-green-700');
+                kycStatusText.textContent = 'KYC verification successful! Your information has been stored and verified.';
+
+                // Add verified badge
+                const verifiedBadge = document.createElement('div');
+                verifiedBadge.className = 'flex items-center justify-center space-x-2 bg-green-100 text-green-800 px-4 py-3 rounded-md mt-4';
+                verifiedBadge.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">Verified User</span>
+                `;
+                kycStatus.appendChild(verifiedBadge);
+
+                // Add insurance redirect button
+                const insuranceButton = document.createElement('div');
+                insuranceButton.className = 'mt-6 text-center';
+                insuranceButton.innerHTML = `
+                    <p class="mb-4 text-gray-600">You can now purchase insurance policies!</p>
+                    <button onclick="window.location.reload()" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
+                        <span>Submit Another KYC</span>
+                    </button>
+                `;
+                kycStatus.appendChild(insuranceButton);
+
+                // Disable form inputs and submit button
+                const formElements = kycForm.querySelectorAll('input, button[type="submit"]');
+                formElements.forEach(element => {
+                    element.disabled = true;
+                });
+
+                // Add disabled form overlay
+                const formOverlay = document.createElement('div');
+                formOverlay.className = 'absolute inset-0 bg-gray-50 bg-opacity-50 flex items-center justify-center';
+                formOverlay.innerHTML = `
+                    <div class="text-center">
+                        <div class="flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600">Your KYC is verified</p>
+                    </div>
+                `;
+                
+                // Add position relative to form if not already present
+                if (getComputedStyle(kycForm).position === 'static') {
+                    kycForm.style.position = 'relative';
+                }
+                kycForm.appendChild(formOverlay);
+
+                return true;
+            } catch (error) {
+                console.error('Error storing KYC data:', error);
+                throw new Error('Failed to store KYC data');
+            }
+        }
+
+        // Form submission with OCR verification and data storage
+        document.getElementById('kycForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('=== KYC Form Submission Started ===');
+
+            try {
+                // Get form data
+                const formData = new FormData(this);
+                
+                // Log all form fields
+                console.log('Form fields:');
+                for (let [key, value] of formData.entries()) {
+                    if (key.includes('Card')) {
+                        console.log(`${key}: [File] ${value.name}`);
+                    } else {
+                        console.log(`${key}: ${value}`);
+                    }
+                }
+
+                // Validate files
+                const panCard = document.getElementById('panCard').files[0];
+                const aadhaarCard = document.getElementById('aadharCard').files[0];
+                
+                if (!panCard) throw new Error('PAN Card file is required');
+                if (!aadhaarCard) throw new Error('Aadhar Card file is required');
+                
+                console.log('Files selected:', {
+                    panCard: { name: panCard.name, type: panCard.type, size: panCard.size },
+                    aadhaarCard: { name: aadhaarCard.name, type: aadhaarCard.type, size: aadhaarCard.size }
+                });
+
+                // Get wallet address
+                const walletAddress = localStorage.getItem('walletAddress');
+                if (!walletAddress) {
+                    throw new Error('Please connect your wallet first');
+                }
+                formData.append('walletAddress', walletAddress);
+
+                // Get token
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Please login to submit KYC');
+                }
+
+                // Submit to server
+                const response = await fetch('/api/kyc/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to submit KYC');
+                }
+
+                // Show success message
+                const kycStatus = document.getElementById('kycStatus');
+                const kycStatusText = document.getElementById('kycStatusText');
+                kycStatus.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700');
+                kycStatus.classList.add('bg-green-100', 'text-green-700');
+                kycStatusText.textContent = 'KYC verification successful! Your information has been submitted and is pending verification.';
+
+                // Add pending badge
+                const pendingBadge = document.createElement('div');
+                pendingBadge.className = 'flex items-center justify-center space-x-2 bg-blue-100 text-blue-800 px-4 py-3 rounded-md mt-4';
+                pendingBadge.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">KYC Pending Verification</span>
+                `;
+                kycStatus.appendChild(pendingBadge);
+
+                // Hide the form
+                this.style.display = 'none';
+
+                // Store KYC status in localStorage
+                localStorage.setItem('kycSubmitted', 'true');
+                localStorage.setItem('kycWalletAddress', walletAddress);
+
+            } catch (error) {
+                console.error('Error during KYC submission:', error);
+                const kycStatus = document.getElementById('kycStatus');
+                const kycStatusText = document.getElementById('kycStatusText');
+                kycStatus.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-blue-100', 'text-blue-700');
+                kycStatus.classList.add('bg-red-100', 'text-red-700');
+                kycStatusText.textContent = `KYC submission failed: ${error.message}`;
+            } finally {
+                // Reset button state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Verify Documents';
+            }
+        });
+
+        // Check for existing KYC data on page load
+        window.addEventListener('load', function() {
+            const kycVerified = localStorage.getItem('kycVerified');
+            const kycWalletAddress = localStorage.getItem('kycWalletAddress');
+            const existingData = localStorage.getItem('kycData');
+
+            if (kycVerified === 'true' && kycWalletAddress === userAddress && existingData) {
+                try {
+                    // Parse the KYC data array
+                    let kycDataArray = JSON.parse(existingData);
+                    if (!Array.isArray(kycDataArray)) {
+                        kycDataArray = [kycDataArray];
+                    }
+
+                    // Find the KYC data for current wallet
+                    const userData = kycDataArray.find(data => data.walletAddress === userAddress);
+                    
+                    if (userData && userData.status === 'verified') {
+                        // User is already verified
+                        const kycForm = document.getElementById('kycForm');
+                        const kycStatus = document.getElementById('kycStatus');
+                        const kycStatusText = document.getElementById('kycStatusText');
+
+                        // Show verified status
+                        kycStatus.classList.remove('hidden');
+                        kycStatus.classList.add('bg-green-100', 'text-green-700');
+                        kycStatusText.textContent = 'Your KYC is already verified!';
+
+                        // Disable form
+                        kycForm.querySelectorAll('input, button').forEach(element => {
+                            element.disabled = true;
+                        });
+
+                        // Add verified badge
+                        const verifiedBadge = document.createElement('div');
+                        verifiedBadge.className = 'flex items-center justify-center bg-green-100 text-green-800 px-4 py-2 rounded-md mt-4';
+                        verifiedBadge.innerHTML = `
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            KYC Verified
+                        `;
+                        kycForm.appendChild(verifiedBadge);
+
+                        // Auto-fill form with stored data
+                        if (userData.personalInfo) {
+                            Object.entries(userData.personalInfo).forEach(([key, value]) => {
+                                const input = document.getElementById(key);
+                                if (input) {
+                                    input.value = value;
+                                }
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking KYC status:', error);
+                }
+            }
+        });
+
+        // ... rest of your existing JavaScript code ...
+    </script>
+</body>
+</html> 

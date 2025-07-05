@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - InsurEdge</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <img src="logo.png" alt="InsurEdge Logo" class="h-8 w-auto">
+                        <span class="ml-2 text-xl font-bold text-gray-900">InsurEdge Admin</span>
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    <button id="connectWalletBtn" onclick="connectWallet()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Connect Wallet
+                    </button>
+                    <span id="walletAddress" class="ml-4 text-sm text-gray-600"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Page header -->
+        <div class="px-4 py-6 sm:px-0">
+            <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p class="mt-2 text-sm text-gray-600">Manage KYC verifications and insurance claims</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-4">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Total KYC Submissions</dt>
+                    <dd id="totalSubmissions" class="mt-1 text-3xl font-semibold text-gray-900">0</dd>
+                </div>
+            </div>
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Pending KYC</dt>
+                    <dd id="pendingVerifications" class="mt-1 text-3xl font-semibold text-yellow-600">0</dd>
+                </div>
+            </div>
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Pending Claims</dt>
+                    <dd id="pendingClaims" class="mt-1 text-3xl font-semibold text-blue-600">0</dd>
+                </div>
+            </div>
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">Total Claims</dt>
+                    <dd id="totalClaims" class="mt-1 text-3xl font-semibold text-gray-900">0</dd>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mt-8">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex" aria-label="Tabs">
+                    <button onclick="switchTab('kyc')" class="tab-button active w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm" id="kyc-tab">
+                        KYC Verifications
+                    </button>
+                    <button onclick="switchTab('claims')" class="tab-button w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm" id="claims-tab">
+                        Insurance Claims
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- KYC Submissions Section -->
+        <div id="kyc-section" class="tab-content">
+            <!-- KYC Submissions Table -->
+            <div class="mt-8">
+                <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+                        <h2 class="text-lg leading-6 font-medium text-gray-900">KYC Submissions</h2>
+                        <button onclick="refreshSubmissions()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted At</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kycSubmissionsTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Table rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Claims Section -->
+        <div id="claims-section" class="tab-content hidden">
+            <div class="mt-8">
+                <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+                        <h2 class="text-lg leading-6 font-medium text-gray-900">Insurance Claims</h2>
+                        <button onclick="refreshClaims()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Policy ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Claim Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted At</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="claimsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Claims will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Document Preview Modal -->
+    <div id="documentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <p class="text-2xl font-bold" id="modalTitle">Document Preview</p>
+                <button onclick="closeModal()" class="text-black close-modal">&times;</button>
+            </div>
+            <div id="modalContent" class="mt-4">
+                <img id="documentPreview" src="" alt="Document Preview" class="max-w-full h-auto">
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .tab-button {
+            color: #6b7280;
+            border-color: transparent;
+        }
+
+        .tab-button:hover {
+            color: #4b5563;
+            border-color: #e5e7eb;
+        }
+
+        .tab-button.active {
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Document preview modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .btn-pay {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-pay:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .paid-status {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
+        .paid-status a {
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .paid-status a:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.paid {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-approve, .btn-reject {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-approve {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-reject {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-approve:hover, .btn-reject:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+
+    <script>
+        // Function to format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        // Function to show document preview
+        function showDocument(url, type) {
+            const modal = document.getElementById('documentModal');
+            const preview = document.getElementById('documentPreview');
+            const title = document.getElementById('modalTitle');
+            
+            preview.src = url;
+            title.textContent = `${type} Preview`;
+            modal.classList.remove('hidden');
+        }
+
+        // Function to close modal
+        function closeModal() {
+            document.getElementById('documentModal').classList.add('hidden');
+        }
+
+        // Function to verify KYC
+        async function verifyKYC(userId) {
+            try {
+                const response = await fetch(`/api/kyc/verify/${userId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('KYC verified successfully!');
+                    refreshSubmissions();
+                } else {
+                    throw new Error(data.message || 'Failed to verify KYC');
+                }
+            } catch (error) {
+                console.error('Error verifying KYC:', error);
+                alert(error.message);
+            }
+        }
+
+        // Function to refresh submissions
+        async function refreshSubmissions() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('Please login first');
+                    return;
+                }
+
+                const response = await fetch('/api/kyc/all', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch KYC submissions');
+                }
+
+                const submissions = await response.json();
+                
+                // Update stats
+                const stats = submissions.reduce((acc, sub) => {
+                    acc.total++;
+                    if (sub.status === 'pending') acc.pending++;
+                    return acc;
+                }, { total: 0, pending: 0 });
+
+                document.getElementById('totalSubmissions').textContent = stats.total;
+                document.getElementById('pendingVerifications').textContent = stats.pending;
+
+                // Update table
+                const tableBody = document.getElementById('kycSubmissionsTable');
+                tableBody.innerHTML = submissions.map(sub => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${sub.fullName}</div>
+                            <div class="text-sm text-gray-500">${sub.email}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="showDocument('${sub.documents.panCard}', 'PAN Card')" 
+                                class="text-blue-600 hover:text-blue-900 mr-2">View PAN</button>
+                            <button onclick="showDocument('${sub.documents.aadharCard}', 'Aadhar Card')" 
+                                class="text-blue-600 hover:text-blue-900">View Aadhar</button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${sub.status === 'verified' ? 'bg-green-100 text-green-800' : 
+                                sub.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-red-100 text-red-800'}">
+                                ${sub.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${formatDate(sub.createdAt)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            ${sub.status === 'pending' ? `
+                                <button onclick="verifyKYC('${sub.userId}')" 
+                                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                    Verify
+                                </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error fetching submissions:', error);
+                alert(error.message);
+            }
+        }
+
+        // Load submissions on page load
+        window.addEventListener('load', refreshSubmissions);
+
+        // Contract ABIs and Addresses
+        const insuranceABI = [
+            "function submitClaim(uint256 policyId, uint256 amount, string memory claimType, string memory description) external returns (bool)",
+            "function getPolicy(uint256 policyId) view returns (uint256 sumAssured, uint256 premium, uint256 startDate, uint256 endDate, bool isActive, uint256 lastPremiumPaid, bool isClaimed)",
+            "function payPremium(uint256 policyId) payable",
+            "function claim(uint256 policyId)",
+            "function verifyClaim(uint256 policyId, bool approved) external returns (bool)",
+            "function isAdmin(address account) external view returns (bool)",
+            "function getPendingClaims() external view returns (uint256[])"
+        ];
+        const insuranceAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+        // Function to switch between tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Update content sections
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+            document.getElementById(`${tabName}-section`).classList.add('active');
+            document.getElementById(`${tabName}-section`).style.display = 'block';
+
+            // Load content based on tab
+            if (tabName === 'claims') {
+                refreshClaims();
+            } else {
+                refreshSubmissions();
+            }
+        }
+
+        // Function to refresh claims
+        async function refreshClaims() {
+            try {
+                console.log('Starting to refresh claims...');
+                
+                // Get claims from localStorage
+                const adminClaims = JSON.parse(localStorage.getItem('adminClaims') || '[]');
+                console.log('Retrieved admin claims from localStorage:', adminClaims);
+                
+                const tbody = document.getElementById('claimsTableBody');
+                tbody.innerHTML = '';
+
+                if (!adminClaims || adminClaims.length === 0) {
+                    console.log('No claims found in localStorage');
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                No pending claims to review
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Sort claims by submission date (newest first)
+                adminClaims.sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate));
+                console.log('Sorted claims by date:', adminClaims);
+
+                // Update claim statistics
+                const stats = {
+                    totalClaims: adminClaims.length,
+                    pendingClaims: adminClaims.filter(c => c.status === 'pending').length,
+                    approvedClaims: adminClaims.filter(c => c.status === 'approved').length,
+                    rejectedClaims: adminClaims.filter(c => c.status === 'rejected').length
+                };
+                
+                // Update stats display
+                document.getElementById('totalClaims').textContent = stats.totalClaims;
+                document.getElementById('pendingClaims').textContent = stats.pendingClaims;
+                
+                // Save stats to localStorage
+                localStorage.setItem('claimStats', JSON.stringify(stats));
+                console.log('Updated claim statistics:', stats);
+
+                // Process each claim
+                adminClaims.forEach(claim => {
+                    console.log('Processing claim:', claim);
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50';
+                    tr.innerHTML = createClaimTableRow(claim);
+                    tbody.appendChild(tr);
+                    console.log('Added claim row to table:', claim.policyId);
+                });
+
+                console.log('Finished refreshing claims');
+
+            } catch (error) {
+                console.error('Error refreshing claims:', error);
+                const tbody = document.getElementById('claimsTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-red-500">
+                            Error loading claims: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Function to handle claim verification
+        async function handleClaim(policyId, isApproved) {
+            try {
+                if (!window.ethereum) {
+                    alert('Please install MetaMask to handle claims');
+                    return;
+                }
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const insuranceContract = new ethers.Contract(insuranceAddress, insuranceABI, signer);
+
+                // Get claim details
+                const claims = JSON.parse(localStorage.getItem('adminClaims') || '[]');
+                const claim = claims.find(c => c.policyId === policyId);
+                
+                if (!claim) {
+                    alert('Claim not found');
+                    return;
+                }
+
+                if (isApproved) {
+                    // Convert amount to Wei
+                    const amountWei = ethers.utils.parseEther(claim.amount);
+                    
+                    // Send payment to user's wallet address
+                    const tx = await signer.sendTransaction({
+                        to: claim.walletAddress,
+                        value: amountWei
+                    });
+                    await tx.wait();
+
+                    // Update claim status in smart contract
+                    await insuranceContract.verifyClaim(policyId, true);
+                    
+                    // Update claim status in localStorage
+                    claim.status = 'approved';
+                    claim.paymentTxHash = tx.hash;
+                    claim.paymentDate = new Date().toISOString();
+                } else {
+                    // Reject claim
+                    await insuranceContract.verifyClaim(policyId, false);
+                    claim.status = 'rejected';
+                }
+
+                // Update localStorage
+                localStorage.setItem('adminClaims', JSON.stringify(claims));
+
+                // Update user's policy status
+                const userPolicies = JSON.parse(localStorage.getItem('userPolicies') || '[]');
+                const policy = userPolicies.find(p => p.id === policyId);
+                if (policy) {
+                    policy.claimDetails.status = isApproved ? 'approved' : 'rejected';
+                    if (isApproved) {
+                        policy.claimDetails.paymentTxHash = claim.paymentTxHash;
+                        policy.claimDetails.paymentDate = claim.paymentDate;
+                    }
+                    localStorage.setItem('userPolicies', JSON.stringify(userPolicies));
+                }
+
+                alert(`Claim ${isApproved ? 'approved and paid' : 'rejected'} successfully!`);
+                refreshClaims();
+            } catch (error) {
+                console.error('Error handling claim:', error);
+                alert('Error handling claim: ' + error.message);
+            }
+        }
+
+        // Add network configuration
+        const GANACHE_NETWORK_CONFIG = {
+            chainId: '0x539', // 1337 in hex
+            chainName: 'Ganache Local',
+            nativeCurrency: {
+                name: 'Ethereum',
+                symbol: 'ETH',
+                decimals: 18
+            },
+            rpcUrls: ['http://127.0.0.1:8545'],
+            blockExplorerUrls: []
+        };
+
+        // Function to ensure correct network
+        async function setupGanacheNetwork() {
+            try {
+                // Request account access
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                // Try to switch to Ganache network
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: GANACHE_NETWORK_CONFIG.chainId }],
+                    });
+                } catch (switchError) {
+                    // If network doesn't exist, add it
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [GANACHE_NETWORK_CONFIG],
+                            });
+                        } catch (addError) {
+                            throw new Error('Failed to add Ganache network: ' + addError.message);
+                        }
+                    } else {
+                        throw switchError;
+                    }
+                }
+
+                // Get current network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== GANACHE_NETWORK_CONFIG.chainId) {
+                    throw new Error('Please switch to Ganache network');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error setting up Ganache network:', error);
+                alert('Error setting up Ganache network: ' + error.message);
+                return false;
+            }
+        }
+
+        // Update the checkMetaMaskConnection function
+        async function checkMetaMaskConnection() {
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask to use this feature');
+                return false;
+            }
+
+            try {
+                // Setup Ganache network
+                if (!await setupGanacheNetwork()) {
+                    return false;
+                }
+
+                // Get accounts
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts.length === 0) {
+                    alert('Please connect your MetaMask wallet');
+                    return false;
+                }
+
+                console.log('Connected to MetaMask with account:', accounts[0]);
+                return true;
+            } catch (error) {
+                console.error('Error connecting to MetaMask:', error);
+                alert('Error connecting to MetaMask: ' + error.message);
+                return false;
+            }
+        }
+
+        // Update the payClaim function
+        async function payClaim(policyId, claimAmount, walletAddress) {
+            try {
+                // Check if wallet is connected
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length === 0) {
+                    if (!await connectWallet()) {
+                        return;
+                    }
+                }
+
+                // Check network connection
+                if (!await setupGanacheNetwork()) {
+                    return;
+                }
+
+                console.log('Processing payment...');
+                console.log('To address:', walletAddress);
+                console.log('Amount:', claimAmount, 'ETH');
+
+                // Initialize ethers provider
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+
+                // Get the current account
+                const account = await signer.getAddress();
+                console.log('Paying from account:', account);
+
+                // Convert claim amount to Wei
+                const amountInWei = ethers.utils.parseEther(claimAmount.toString());
+                console.log('Amount in Wei:', amountInWei.toString());
+
+                // Prepare transaction
+                const tx = await signer.sendTransaction({
+                    to: walletAddress,
+                    value: amountInWei,
+                    gasLimit: 100000 // Set gas limit for Ganache
+                });
+
+                console.log('Transaction sent:', tx.hash);
+
+                // Wait for transaction confirmation
+                const receipt = await tx.wait();
+                console.log('Transaction confirmed:', receipt);
+
+                // Update claim status in localStorage
+                const adminClaims = JSON.parse(localStorage.getItem('adminClaims') || '[]');
+                const claimIndex = adminClaims.findIndex(claim => claim.policyId === policyId);
+                
+                if (claimIndex !== -1) {
+                    adminClaims[claimIndex].status = 'paid';
+                    adminClaims[claimIndex].paymentTxHash = receipt.transactionHash;
+                    adminClaims[claimIndex].paymentDate = new Date().toISOString();
+                    localStorage.setItem('adminClaims', JSON.stringify(adminClaims));
+                }
+
+                // Update user policies
+                const userPolicies = JSON.parse(localStorage.getItem('userPolicies') || '[]');
+                const policy = userPolicies.find(p => p.id === policyId);
+                if (policy && policy.claimDetails) {
+                    policy.claimDetails.status = 'paid';
+                    policy.claimDetails.paymentTxHash = receipt.transactionHash;
+                    policy.claimDetails.paymentDate = new Date().toISOString();
+                    localStorage.setItem('userPolicies', JSON.stringify(userPolicies));
+                }
+
+                alert('Claim payment processed successfully!');
+                refreshClaims(); // Refresh the claims table
+
+            } catch (error) {
+                console.error('Error processing claim payment:', error);
+                alert('Error processing payment: ' + error.message);
+            }
+        }
+
+        // Function to verify claim
+        async function verifyClaim(policyId, isApproved) {
+            try {
+                console.log('Verifying claim:', { policyId, isApproved });
+                
+                // Get claim details from localStorage
+                const adminClaims = JSON.parse(localStorage.getItem('adminClaims') || '[]');
+                const claimIndex = adminClaims.findIndex(claim => claim.policyId === policyId);
+                
+                if (claimIndex === -1) {
+                    throw new Error('Claim not found');
+                }
+
+                const claim = adminClaims[claimIndex];
+                
+                // Update claim status
+                if (isApproved) {
+                    adminClaims[claimIndex].status = 'approved';
+                    console.log('Claim approved:', claim);
+                } else {
+                    adminClaims[claimIndex].status = 'rejected';
+                    console.log('Claim rejected:', claim);
+                }
+
+                // Save updated claims to localStorage
+                localStorage.setItem('adminClaims', JSON.stringify(adminClaims));
+
+                // Update user policies
+                const userPolicies = JSON.parse(localStorage.getItem('userPolicies') || '[]');
+                const policy = userPolicies.find(p => p.id === policyId);
+                if (policy && policy.claimDetails) {
+                    policy.claimDetails.status = isApproved ? 'approved' : 'rejected';
+                    localStorage.setItem('userPolicies', JSON.stringify(userPolicies));
+                }
+
+                // Show success message
+                alert(`Claim ${isApproved ? 'approved' : 'rejected'} successfully!`);
+                
+                // Refresh the claims table
+                refreshClaims();
+
+            } catch (error) {
+                console.error('Error verifying claim:', error);
+                alert('Error verifying claim: ' + error.message);
+            }
+        }
+
+        // Update the claim table row generation to include payment button and Ganache transaction link
+        function createClaimTableRow(claim) {
+            return `
+                <td class="px-6 py-4 whitespace-nowrap">${claim.policyId}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${claim.walletAddress}<br>
+                    <small class="text-gray-500">(${claim.policyType})</small>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">${claim.claimType}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${claim.amount} ETH</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="status-badge ${claim.status}">${claim.status}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${new Date(claim.submissionDate).toLocaleDateString()}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${claim.status === 'approved' ? 
+                        `<button onclick="payClaim('${claim.policyId}', ${claim.amount}, '${claim.walletAddress}')" 
+                            class="btn-pay">
+                            Pay Claim
+                        </button>` 
+                        : claim.status === 'paid' ?
+                        `<span class="paid-status">Paid<br>
+                        <small>Transaction: ${claim.paymentTxHash ? claim.paymentTxHash.substring(0, 10) + '...' : 'N/A'}</small></span>`
+                        : claim.status === 'pending' ?
+                        `<div class="action-buttons">
+                            <button onclick="verifyClaim('${claim.policyId}', true)" class="btn-approve">Approve</button>
+                            <button onclick="verifyClaim('${claim.policyId}', false)" class="btn-reject">Reject</button>
+                        </div>`
+                        : `<span class="status-badge rejected">Rejected</span>`
+                    }
+                </td>
+            `;
+        }
+
+        // Add wallet connection function
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask to use this feature');
+                    return false;
+                }
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const account = accounts[0];
+                
+                // Display connected address
+                document.getElementById('walletAddress').textContent = `Connected: ${account.substring(0, 6)}...${account.substring(38)}`;
+                document.getElementById('connectWalletBtn').textContent = 'Connected';
+                
+                // Setup Ganache network
+                await setupGanacheNetwork();
+                
+                return true;
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                alert('Error connecting wallet: ' + error.message);
+                return false;
+            }
+        }
+
+        // Initialize page and wallet connection
+        window.addEventListener('load', async function() {
+            // Set KYC tab as active by default
+            switchTab('kyc');
+
+            // Check for MetaMask and setup network
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask is installed!');
+                
+                // Try to connect wallet automatically if previously connected
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        document.getElementById('walletAddress').textContent = `Connected: ${account.substring(0, 6)}...${account.substring(38)}`;
+                        document.getElementById('connectWalletBtn').textContent = 'Connected';
+                        await setupGanacheNetwork();
+                    }
+                } catch (error) {
+                    console.error('Error checking wallet connection:', error);
+                }
+                
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', function (accounts) {
+                    console.log('Account changed:', accounts[0]);
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        document.getElementById('walletAddress').textContent = `Connected: ${account.substring(0, 6)}...${account.substring(38)}`;
+                        document.getElementById('connectWalletBtn').textContent = 'Connected';
+                    } else {
+                        document.getElementById('walletAddress').textContent = '';
+                        document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
+                    }
+                });
+
+                // Listen for chain changes
+                window.ethereum.on('chainChanged', function (chainId) {
+                    console.log('Network changed:', chainId);
+                    if (chainId !== GANACHE_NETWORK_CONFIG.chainId) {
+                        alert('Please switch to Ganache network');
+                        setupGanacheNetwork();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

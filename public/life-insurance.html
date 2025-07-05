@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Insurance - InsurEdge</title>
+    <link rel="stylesheet" href="style1.css">
+    <style>
+        /* Add specific styles for Life Insurance here */
+        .insurance-header h1 {
+            color: #1e3a8a;
+        }
+        .insurance-type {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .insurance-type h2 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+        .insurance-type ul {
+            list-style: none;
+            padding: 0;
+        }
+        .insurance-type li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .insurance-type li:before {
+            content: "•";
+            color: #1e3a8a;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        .comparison-table th {
+            background: #1e3a8a;
+            color: white;
+        }
+        .comparison-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .wallet-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-left: 20px;
+            margin-top: 4px;
+        }
+        .wallet-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .wallet-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .wallet-btn.connected {
+            background: #f44336;
+        }
+        .wallet-btn.connected:hover {
+            background: #d32f2f;
+        }
+        .wallet-address {
+            font-size: 14px;
+            color: #666;
+            display: none;
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .wallet-status {
+            font-size: 14px;
+            color: #666;
+            display: inline-block;
+        }
+        .wallet-status::before {
+            content: "•";
+            margin-right: 4px;
+            font-size: 16px;
+        }
+        .wallet-btn.loading {
+            position: relative;
+            pointer-events: none;
+        }
+        .wallet-btn.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .wallet-btn .wallet-icon {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+        .wallet-btn:hover .wallet-icon {
+            transform: scale(1.1);
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .kyc-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        .kyc-verified-badge.hidden {
+            display: none;
+        }
+        .kyc-status {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .buy-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .buy-button:hover {
+            background: #45a049;
+        }
+        .buy-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* KYC Status Section Styles */
+        .kyc-status-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .alert p {
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Disabled button styles */
+        .create-policy-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Mobile menu styles */
+        .nav-links.md\:hidden {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .nav-links.md\:hidden.active {
+            display: flex;
+        }
+        .nav-links.md\:hidden .nav-link {
+            padding: 0.75rem 0;
+            width: 100%;
+            text-align: center;
+        }
+        .nav-links.md\:hidden .wallet-section {
+            margin: 1rem 0;
+            width: 100%;
+            justify-content: center;
+        }
+        /* Add styles for the logout button */
+        #userMenu button {
+            padding: 4px 8px;
+            font-size: 0.875rem;
+            border-radius: 4px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #userMenu button:hover {
+            background-color: #dc2626;
+        }
+        /* Add navbar styles */
+        nav {
+            padding: 1rem 5%;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+        }
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-right: auto;
+            margin-left: 2rem;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background: linear-gradient(90deg, #1e3a8a, #2563eb);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        .flex.items-center.space-x-4 {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .wallet-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f8fafc;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        .mobile-menu-btn svg {
+            width: 24px;
+            height: 24px;
+            color: #1e3a8a;
+        }
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 72px;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+        .mobile-menu.active {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mobile-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .mobile-menu a:hover {
+            background-color: #f8fafc;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .flex.items-center.space-x-4 {
+                margin-left: auto;
+            }
+        }
+        .kyc-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .kyc-form-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1e3a8a;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .kyc-form-link:hover {
+            background-color: #1e40af;
+        }
+        .alert {
+            margin-top: 15px;
+        }
+        /* Add KYC Notice Section Styles */
+        .kyc-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .kyc-notice h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .kyc-notice a {
+            display: inline-block;
+            background-color: #856404;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            margin-top: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .kyc-notice a:hover {
+            background-color: #6b5103;
+        }
+
+        .kyc-notice.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/"><img src="logo.png" alt="InsurEdge Logo"></a>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/life-insurance.html">Life Insurance</a>
+                <a href="/dashboard.html">Dashboard</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="wallet-section">
+                        <button id="walletBtn" class="wallet-btn" onclick="handleWalletClick()">
+                            <svg class="wallet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            Connect Wallet
+                        </button>
+                        <span id="walletAddress" class="wallet-address"></span>
+                        <span id="walletStatus" class="wallet-status">Not Connected</span>
+                </div>
+                <div class="kyc-verified-badge hidden">
+                    <span class="kyc-status">KYC ✓</span>
+                </div>
+                    </div>
+                    <button class="mobile-menu-btn md:hidden" onclick="toggleMobileMenu()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+        </nav>
+        <div id="mobileMenu" class="mobile-menu hidden">
+            <a href="/">Home</a>
+            <a href="/life-insurance.html">Life Insurance</a>
+            <a href="/dashboard.html">Dashboard</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="life-insurance">
+            <div class="insurance-header">
+                <h1>Life Insurance</h1>
+                <p>Secure your family's future with our transparent and reliable life insurance policies.</p>
+            </div>
+
+            <div class="container">
+                <div class="insurance-grid">
+                    <div class="insurance-content">
+                        <div class="insurance-type">
+                            <h2>Term Insurance (Pure Protection Plan)</h2>
+                            <p>Pure protection with no maturity benefit if you survive the policy term.</p>
+                            <ul>
+                                <li>Affordable premiums for high coverage</li>
+                                <li>No money back if you survive the policy term</li>
+                                <li>Perfect for those seeking pure protection</li>
+                                <li>Similar to car insurance concept</li>
+                                <li>Best for young families with limited budget</li>
+                                <li>Policy term: 1 year (renewable annually)</li>
+                                <li>Flexible renewal options</li>
+                            </ul>
+                        </div>
+
+                        <div class="insurance-type">
+                            <h2>Endowment Plans / Money-Back Plans</h2>
+                            <p>Combination of insurance and savings with regular payouts during the policy term.</p>
+                            <ul>
+                                <li>Get maturity benefit if you survive the policy term</li>
+                                <li>Acts as both insurance and savings</li>
+                                <li>Higher premiums compared to term insurance</li>
+                                <li>Regular payouts during policy term</li>
+                                <li>Ideal for long-term financial planning</li>
+                                <li>Fixed policy term: 20 years</li>
+                                <li>Long-term commitment with guaranteed returns</li>
+                            </ul>
+                            <div class="payout-structure">
+                                <h3>Money-Back Plan Payout Structure</h3>
+                                <div class="premium-details">
+                                    <p>Monthly Premium: ₹1,499</p>
+                                    <p>Annual Premium: ₹17,988</p>
+                                    <p>Total Premium (20 years): ₹3,59,760</p>
+                                    <p>Sum Assured: ₹15 Lakhs</p>
+                                </div>
+                                <ul>
+                                    <li>15% payout at 10th year (₹2.25 Lakhs)</li>
+                                    <li>15% payout at 15th year (₹2.25 Lakhs)</li>
+                                    <li>55% payout at maturity (₹8.25 Lakhs)</li>
+                                </ul>
+                                <p class="payout-note">Total Returns: ₹15 Lakhs (100% of sum assured)</p>
+                            </div>
+                        </div>
+
+                        <div class="comparison-section">
+                            <h2>Plan Comparison</h2>
+                            <table class="comparison-table">
+                                <tr>
+                                    <th>Features</th>
+                                    <th>Term Insurance</th>
+                                    <th>Money-Back Plan</th>
+                                </tr>
+                                <tr>
+                                    <td>Premium Cost</td>
+                                    <td>₹499/month</td>
+                                    <td>₹1,499/month</td>
+                                </tr>
+                                <tr>
+                                    <td>Sum Assured</td>
+                                    <td>₹1 Cr</td>
+                                    <td>₹15 Lakhs</td>
+                                </tr>
+                                <tr>
+                                    <td>Maturity Benefit</td>
+                                    <td>No</td>
+                                    <td>₹8.25 Lakhs (55%)</td>
+                                </tr>
+                                <tr>
+                                    <td>Regular Payouts</td>
+                                    <td>No</td>
+                                    <td>₹2.25 Lakhs every 5 years</td>
+                                </tr>
+                                <tr>
+                                    <td>Death Benefit</td>
+                                    <td>₹1 Cr</td>
+                                    <td>₹15 Lakhs</td>
+                                </tr>
+                                <tr>
+                                    <td>Policy Term</td>
+                                    <td>1 Year (Renewable)</td>
+                                    <td>20 Years (Fixed)</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Pure Protection</td>
+                                    <td>Regular Income + Protection</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="insurance-buy">
+                        <div class="kyc-notice hidden">
+                            <h3>KYC Verification Required</h3>
+                            <p>Please complete your KYC verification to purchase insurance.</p>
+                            <a href="kyc.html">Complete KYC</a>
+                        </div>
+                        <div class="plan-selector">
+                            <div class="plan-option selected" data-plan-type="term">
+                                <div class="plan-name">Term Insurance</div>
+                                <div class="plan-price">₹499/month</div>
+                                <div class="plan-features">
+                                    • Pure protection plan<br>
+                                    • High coverage amount (₹1 Cr)<br>
+                                    • No maturity benefit<br>
+                                    • 1-year term (renewable)
+                                </div>
+                            </div>
+                            <div class="plan-option" data-plan-type="moneyback">
+                                <div class="plan-name">Money-Back Plan</div>
+                                <div class="plan-price">₹1,499/month</div>
+                                <div class="plan-features">
+                                    • Protection + Regular Income<br>
+                                    • Sum Assured: ₹15 Lakhs<br>
+                                    • ₹2.25 Lakhs every 5 years<br>
+                                    • ₹8.25 Lakhs at maturity<br>
+                                    • 20-year fixed term
+                                </div>
+                            </div>
+                        </div>
+                        <button class="buy-button">Get Covered Now</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <img src="logo.png" alt="Insuredge Logo" style="width: 130px; height: auto;">
+                </div>
+                <p>InsurEdge</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Disclaimer</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 InsurEdge. All rights reserved.</p>
+        </div>
+    </footer>
+    <!-- Load ethers.js first -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" type="application/javascript"></script>
+    <!-- Then load our wallet.js -->
+    <script src="js/wallet.js"></script>
+    <!-- Load KYC.js before auth.js -->
+    <script src="js/kyc.js"></script>
+    <!-- Finally load auth.js -->
+    <script src="js/auth.js"></script>
+    <script>
+        // Contract Addresses (from wallet.js)
+        const termLifeContractAddress = "0xDe210B21D65eD85D61A107b1d82c891bb2Fe9ae6";
+        const moneyBackContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
+        // Contract ABIs (from wallet.js)
+        const termLifeABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "_sumAssured",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "createPolicy",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "payable",
+                "type": "function"
+            }
+        ];
+
+        const moneyBackABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "_sumAssured",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "createPolicy",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            }
+        ];
+
+        // Handle buy button click
+        async function handleBuyClick() {
+            if (!window.ethereum.selectedAddress) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            const selectedPlan = document.querySelector('.plan-option.selected');
+            if (!selectedPlan) {
+                alert('Please select a plan first!');
+                return;
+            }
+
+            try {
+                const buyButton = document.querySelector('.buy-button');
+                buyButton.disabled = true;
+                buyButton.textContent = 'Processing...';
+
+                if (selectedPlan.querySelector('.plan-name').textContent === 'Term Insurance') {
+                    await window.createTermLifePolicy();
+                } else {
+                    await window.createMoneyBackPolicy();
+                }
+            } catch (error) {
+                console.error('Error creating policy:', error);
+                alert('Failed to create policy: ' + error.message);
+            } finally {
+                const buyButton = document.querySelector('.buy-button');
+                buyButton.disabled = false;
+                buyButton.textContent = 'Get Covered Now';
+            }
+        }
+
+        // Add click handler to buy button
+        document.querySelector('.buy-button').addEventListener('click', handleBuyClick);
+
+        // Update plan selection
+        document.querySelectorAll('.plan-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.plan-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Add mobile menu toggle function
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+            }
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (mobileMenu && mobileMenuBtn && !mobileMenu.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Function to check KYC status and update UI
+        async function checkKYCAndUpdateUI() {
+            try {
+                if (!window.ethereum || !window.ethereum.selectedAddress) {
+                    return;
+                }
+
+                const kycData = JSON.parse(localStorage.getItem('kycData') || '[]');
+                const kycArray = Array.isArray(kycData) ? kycData : [kycData];
+                const userKYC = kycArray.find(k => k && k.walletAddress.toLowerCase() === window.ethereum.selectedAddress.toLowerCase());
+                
+                const buyButton = document.querySelector('.buy-button');
+                const kycNotice = document.querySelector('.kyc-notice');
+                
+                if (!userKYC || userKYC.status !== 'verified') {
+                    buyButton.style.display = 'none';
+                    kycNotice.classList.remove('hidden');
+                } else {
+                    buyButton.style.display = 'block';
+                    kycNotice.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking KYC status:', error);
+            }
+        }
+
+        // Update wallet UI function
+        function updateWalletUI() {
+            const walletBtn = document.getElementById('walletBtn');
+            const walletStatus = document.getElementById('walletStatus');
+            const walletAddress = document.getElementById('walletAddress');
+            const kycBadge = document.querySelector('.kyc-verified-badge');
+
+            if (userAddress) {
+                walletBtn.classList.add('connected');
+                walletBtn.textContent = 'Disconnect';
+                walletStatus.textContent = 'Connected';
+                const shortAddress = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                walletAddress.textContent = shortAddress;
+                walletAddress.style.display = 'inline';
+
+                const kycData = JSON.parse(localStorage.getItem('kycData') || '[]');
+                const userKYC = kycData.find(k => k.walletAddress === userAddress);
+                if (userKYC && userKYC.status === 'verified') {
+                    kycBadge.classList.remove('hidden');
+                } else {
+                    kycBadge.classList.add('hidden');
+                }
+
+                // Check KYC status and update UI
+                checkKYCAndUpdateUI();
+            } else {
+                walletBtn.classList.remove('connected');
+                walletBtn.textContent = 'Connect Wallet';
+                walletStatus.textContent = 'Not Connected';
+                walletAddress.style.display = 'none';
+                kycBadge.classList.add('hidden');
+
+                // Hide buy button and show KYC notice when wallet is disconnected
+                const buyButton = document.querySelector('.buy-button');
+                const kycNotice = document.querySelector('.kyc-notice');
+                buyButton.style.display = 'none';
+                kycNotice.classList.remove('hidden');
+            }
+        }
+
+        // Initialize wallet on page load
+        window.addEventListener('load', async function() {
+            try {
+                await initializeWeb3();
+                // Check and update KYC status
+                const kycStatus = await checkKYCStatus();
+                if (kycStatus) {
+                    updateKYCUI(kycStatus);
+                }
+                // Check KYC and update UI
+                checkKYCAndUpdateUI();
+            } catch (error) {
+                console.error('Error initializing:', error);
+            }
+        });
+
+        // Wallet connection handling
+        async function handleWalletClick() {
+            const walletBtn = document.getElementById('walletBtn');
+            const walletAddress = document.getElementById('walletAddress');
+            
+            try {
+                if (walletBtn.textContent === 'Connect Wallet') {
+                    await connectWallet();
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        walletAddress.textContent = `${account.substring(0, 6)}...${account.substring(38)}`;
+                        walletBtn.textContent = 'Disconnect';
+                        walletBtn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                        walletBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+                    }
+                } else {
+                    await disconnectWallet();
+                    walletAddress.textContent = '';
+                    walletBtn.textContent = 'Connect Wallet';
+                    walletBtn.classList.remove('bg-red-500', 'hover:bg-red-700');
+                    walletBtn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                }
+            } catch (error) {
+                console.error('Error with wallet connection:', error);
+                alert('Error connecting wallet: ' + error.message);
+            }
+        }
+
+        // Initialize wallet connection
+        document.addEventListener('DOMContentLoaded', async function() {
+            const walletBtn = document.getElementById('walletBtn');
+            const walletAddress = document.getElementById('walletAddress');
+            
+            if (walletBtn) {
+                // Check if already connected
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        const account = accounts[0];
+                        walletAddress.textContent = `${account.substring(0, 6)}...${account.substring(38)}`;
+                        walletBtn.textContent = 'Disconnect';
+                        walletBtn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                        walletBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+                    }
+                } catch (error) {
+                    console.error('Error checking wallet connection:', error);
+                }
+
+                // Listen for account changes
+                if (window.ethereum) {
+                    window.ethereum.on('accountsChanged', async function(accounts) {
+                        if (accounts.length > 0) {
+                            const account = accounts[0];
+                            walletAddress.textContent = `${account.substring(0, 6)}...${account.substring(38)}`;
+                            walletBtn.textContent = 'Disconnect';
+                            walletBtn.classList.remove('bg-blue-500', 'hover:bg-blue-700');
+                            walletBtn.classList.add('bg-red-500', 'hover:bg-red-700');
+                        } else {
+                            walletAddress.textContent = '';
+                            walletBtn.textContent = 'Connect Wallet';
+                            walletBtn.classList.remove('bg-red-500', 'hover:bg-red-700');
+                            walletBtn.classList.add('bg-blue-500', 'hover:bg-blue-700');
+                        }
+                    });
+
+                    window.ethereum.on('chainChanged', function(chainId) {
+                        window.location.reload();
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
