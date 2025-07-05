@@ -64,16 +64,6 @@
 
 ## ⚙️ System Architecture
 
-Frontend (Web3.js + MetaMask)
-⇅
-Backend (Node.js + Express.js) — REST APIs
-⇅
-Smart Contracts (Solidity on Ethereum)
-⇅
-Decentralized Storage (IPFS via Pinata)
-⇅
-MongoDB Atlas (Metadata)
-
 ## 🧪 Core Workflows
 
 ### 1. 🔐 User Registration + KYC Upload
