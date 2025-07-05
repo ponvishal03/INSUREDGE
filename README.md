@@ -99,9 +99,8 @@ truffle migrate --network development
 node server.js
 
 ### 👨‍💻 Project Contributors
-
-Samuvel Chandran
-Kaustubh Mhatre
+ 
+Kaustubh Mhatre, 
 Ponvishal Nadar
 
 Guided by: Prof. Suhas Lawand
